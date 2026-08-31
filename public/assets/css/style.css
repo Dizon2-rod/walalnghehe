@@ -1,0 +1,78 @@
+:root{
+	--rose-veil: #fff7fb;
+}
+
+body{
+	font-family: var(--font-primary, 'Poppins'), sans-serif;
+	background: linear-gradient(180deg, var(--rose-veil) 0%, #ffffff 60%);
+	color:#2a2a2a;
+}
+
+.bg-rose-veil{ background-color: var(--rose-veil); }
+
+.romantic-title{
+	font-family: var(--font-display, 'Playfair Display'), serif;
+	font-weight:700;
+}
+
+.shadow-soft{
+	box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+.rounded-4{ border-radius: 1rem; }
+.rounded-5{ border-radius: 1.5rem; }
+
+.btn-primary{
+	background: var(--color-primary);
+	border-color: var(--color-primary);
+	color:#512a3a;
+}
+.btn-primary:hover{ filter: brightness(0.95); }
+
+.card-romance{
+	border:0;
+	border-radius: 1.25rem;
+	background: linear-gradient(180deg, #ffffff 0%, #fff4f8 100%);
+	box-shadow: 0 10px 35px rgba(239,187,207,0.35);
+}
+
+.badge-lock{
+	background: rgba(205,180,219,0.25);
+	color:#7a6292;
+	border:1px solid rgba(205,180,219,0.5);
+}
+
+.fade-in{
+	animation: fadein 600ms ease-out both;
+}
+@keyframes fadein{
+	from{opacity:0; transform: translateY(6px);}
+	to{opacity:1; transform: translateY(0);}
+}
+
+.hero-gradient{
+	background: radial-gradient(1200px 400px at 10% -10%, rgba(239,187,207,0.35), transparent),
+		radial-gradient(1200px 400px at 90% -10%, rgba(205,180,219,0.35), transparent);
+}
+
+.lock-overlay{
+	position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+	background: rgba(255,255,255,0.65); backdrop-filter: blur(6px);
+	border-radius: inherit;
+}
+
+.gallery-thumb{
+	aspect-ratio: 4/3;
+	object-fit: cover;
+	border-radius: 0.75rem;
+}
+
+.form-check.form-switch .form-check-input{
+	width: 3rem; height:1.5rem;
+	background-color: #f1e7f7;
+	border-color: #e4d6ef;
+}
+.form-check.form-switch .form-check-input:checked{
+	background-color: var(--color-accent);
+	border-color: var(--color-accent);
+}

@@ -1,0 +1,14 @@
+{
+	"name": "monthsary/gift-system",
+	"description": "Romantic monthsary gift system (PHP, MongoDB, Bootstrap)",
+	"type": "project",
+	"require": {
+		"php": ">=8.1",
+		"mongodb/mongodb": "^1.19"
+	},
+	"autoload": {
+		"psr-4": {
+			"App\\": "src/"
+		}
+	}
+}
