@@ -3,9 +3,10 @@ require_once __DIR__ . '/../includes/helpers.php';
 require_login();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-	header('Location: /pages/create_gift.php');
+	header('Location: ' . app_url('pages/create_gift.php'));
 	exit;
 }
+require_csrf();
 
 $title = trim($_POST['title'] ?? '');
 $message = trim($_POST['message'] ?? '');
@@ -16,25 +17,17 @@ $hint = trim($_POST['hint'] ?? '');
 
 if ($title === '' || $message === '') {
 	flash_set('error', 'Please provide a title and a love message.');
-	header('Location: /pages/create_gift.php');
+	header('Location: ' . app_url('pages/create_gift.php'));
 	exit;
 }
 
 // Handle image upload
 $imgPath = null;
-if (!empty($_FILES['image']['name'])) {
-	$uploads = __DIR__ . '/../public/uploads/';
-	@mkdir($uploads, 0775, true);
-	$ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-	$filename = 'gift_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . strtolower($ext ?: 'jpg');
-	$dest = $uploads . $filename;
-	if (!move_uploaded_file($_FILES['image']['tmp_name'], $dest)) {
-		flash_set('error', 'Failed to upload image.');
-		header('Location: /pages/create_gift.php');
-		exit;
-	}
-	$imgPath = '/uploads/' . $filename;
-}
+try { $imgPath = secure_upload($_FILES['image'] ?? [], 'image'); }
+catch (Throwable $e) { flash_set('error', $e->getMessage()); header('Location: ' . app_url('pages/create_gift.php')); exit; }
+$musicFile = null; $voiceNote = null;
+try { $musicFile = secure_upload($_FILES['music_file'] ?? [], 'audio'); $voiceNote = secure_upload($_FILES['voice_note'] ?? [], 'audio'); }
+catch (Throwable $e) { flash_set('error', $e->getMessage()); header('Location: ' . app_url('pages/create_gift.php')); exit; }
 
 $now = new DateTimeImmutable('now');
 $monthCreated = (int)$now->format('n');
@@ -44,10 +37,20 @@ $doc = [
 	'title' => $title,
 	'message' => $message,
 	'image' => $imgPath,
+	'music_url' => $musicFile ?: ($music ?: null),
 	'music' => $music ?: null,
+	'voice_note_url' => $voiceNote,
+	'unlock_at' => '2026-09-14T00:00:00+08:00',
+	'timeline_year' => 4,
+	'coupons' => [
+		['id' => 1, 'title' => 'Unlimited Cuddle Pass', 'icon' => '♥', 'is_redeemed' => false],
+		['id' => 2, 'title' => 'Late Night Food Trip Ticket', 'icon' => 'Food', 'is_redeemed' => false],
+		['id' => 3, 'title' => '1 Day No-Tampo Pass', 'icon' => 'Forever', 'is_redeemed' => false],
+	],
+	'recipient_reply' => null,
 	'is_locked' => $isLocked,
 	'lock_hint' => $hint ?: null,
-	'created_at' => new MongoDB\BSON\UTCDateTime(),
+	'created_at' => mongo_utc_now(),
 	'month_created' => $monthCreated,
 	'year_created' => $yearCreated,
 	'owner_id' => current_user()['_id'] ?? null
@@ -66,5 +69,5 @@ if ($isLocked) {
 
 col_gifts()->insertOne($doc);
 flash_set('success', 'Your gift has been saved!');
-header('Location: /pages/history.php');
+header('Location: ' . app_url('pages/history.php'));
 exit;

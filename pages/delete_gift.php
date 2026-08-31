@@ -3,10 +3,10 @@ require_once __DIR__ . '/../includes/helpers.php';
 require_login();
 
 $id = $_GET['id'] ?? '';
-try { $oid = new MongoDB\BSON\ObjectId($id); } catch (Throwable $e) { $oid = null; }
+try { $oid = mongo_object_id($id); } catch (Throwable $e) { $oid = null; }
 if (!$oid) {
 	flash_set('error', 'Invalid gift.');
-	header('Location: /pages/history.php');
+	header('Location: ' . app_url('pages/history.php'));
 	exit;
 }
 
@@ -24,5 +24,5 @@ if ($gift) {
 	flash_set('error', 'Gift not found.');
 }
 
-header('Location: /pages/history.php');
+header('Location: ' . app_url('pages/history.php'));
 exit;

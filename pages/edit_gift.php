@@ -3,16 +3,16 @@ require_once __DIR__ . '/../includes/helpers.php';
 require_login();
 
 $id = $_GET['id'] ?? '';
-try { $oid = new MongoDB\BSON\ObjectId($id); } catch (Throwable $e) { $oid = null; }
+try { $oid = mongo_object_id($id); } catch (Throwable $e) { $oid = null; }
 if (!$oid) {
 	flash_set('error', 'Gift not found.');
-	header('Location: /pages/history.php');
+	header('Location: ' . app_url('pages/history.php'));
 	exit;
 }
 $gift = col_gifts()->findOne(['_id' => $oid]);
 if (!$gift) {
 	flash_set('error', 'Gift not found.');
-	header('Location: /pages/history.php');
+	header('Location: ' . app_url('pages/history.php'));
 	exit;
 }
 
@@ -29,7 +29,8 @@ include __DIR__ . '/../includes/header.php';
 			<?php if ($msg = flash_get('success')): ?>
 				<div class="alert alert-success rounded-4"><?= htmlspecialchars($msg) ?></div>
 			<?php endif; ?>
-			<form method="post" action="/pages/update_gift.php" enctype="multipart/form-data">
+			<form method="post" action="<?= htmlspecialchars(app_url('pages/update_gift.php')) ?>" enctype="multipart/form-data">
+				<?= csrf_field() ?>
 				<input type="hidden" name="id" value="<?= (string)$gift['_id'] ?>">
 				<div class="mb-3">
 					<label class="form-label">Title</label>
@@ -53,6 +54,7 @@ include __DIR__ . '/../includes/header.php';
 					<label class="form-label">Music Link (YouTube/Spotify)</label>
 					<input type="url" name="music" class="form-control rounded-4" value="<?= htmlspecialchars((string)($gift['music'] ?? '')) ?>">
 				</div>
+				<div class="row g-3 mb-3"><div class="col-md-6"><label class="form-label">Replace Ambient Audio</label><input type="file" name="music_file" class="form-control rounded-4" accept="audio/mpeg,audio/mp4,audio/wav"></div><div class="col-md-6"><label class="form-label">Replace Voice Note</label><input type="file" name="voice_note" class="form-control rounded-4" accept="audio/mpeg,audio/mp4,audio/wav"></div></div>
 				<div class="form-check form-switch mb-3">
 					<input class="form-check-input" type="checkbox" role="switch" id="lockSwitch" name="is_locked" <?= ($gift['is_locked'] ?? false) ? 'checked' : '' ?>>
 					<label class="form-check-label" for="lockSwitch">Lock this gift</label>
@@ -68,7 +70,7 @@ include __DIR__ . '/../includes/header.php';
 					</div>
 				</div>
 				<div class="d-flex gap-2 mt-4">
-					<a class="btn btn-outline-dark rounded-pill" href="/pages/history.php">Cancel</a>
+					<a class="btn btn-outline-dark rounded-pill" href="<?= htmlspecialchars(app_url('pages/history.php')) ?>">Cancel</a>
 					<button class="btn btn-primary rounded-pill">Save Changes</button>
 				</div>
 			</form>

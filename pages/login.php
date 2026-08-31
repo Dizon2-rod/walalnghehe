@@ -7,12 +7,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	$password = (string)($_POST['password'] ?? '');
 	$user = col_users()->findOne(['email' => $email]);
 	if ($user && password_verify($password, $user['password_hash'])) {
-		$_SESSION['user'] = ['_id' => (string)$user['_id'], 'email' => $user['email']];
-		header('Location: /pages/dashboard.php');
+		$_SESSION['user'] = ['_id' => (string)$user['_id'], 'email' => $user['email'], 'role' => (string)($user['role'] ?? ($user['email'] === 'admin@example.com' ? 'admin' : 'user'))];
+		header('Location: ' . app_url('pages/dashboard.php'));
 		exit;
 	}
 	flash_set('error', 'Incorrect email or password.');
-	header('Location: /pages/login.php');
+	header('Location: ' . app_url('pages/login.php'));
 	exit;
 }
 
@@ -27,6 +27,7 @@ include __DIR__ . '/../includes/header.php';
 				<div class="alert alert-danger rounded-4"><?= htmlspecialchars($msg) ?></div>
 			<?php endif; ?>
 			<form method="post" class="mt-3">
+				<?= csrf_field() ?>
 				<div class="mb-3">
 					<label class="form-label">Email</label>
 					<input type="email" name="email" class="form-control rounded-4" placeholder="you@example.com" required>

@@ -3,22 +3,23 @@ require_once __DIR__ . '/../includes/helpers.php';
 require_login();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-	header('Location: /pages/history.php');
+	header('Location: ' . app_url('pages/history.php'));
 	exit;
 }
+require_csrf();
 
 $id = $_POST['id'] ?? '';
-try { $oid = new MongoDB\BSON\ObjectId($id); } catch (Throwable $e) { $oid = null; }
+try { $oid = mongo_object_id($id); } catch (Throwable $e) { $oid = null; }
 if (!$oid) {
 	flash_set('error', 'Invalid gift.');
-	header('Location: /pages/history.php');
+	header('Location: ' . app_url('pages/history.php'));
 	exit;
 }
 
 $gift = col_gifts()->findOne(['_id' => $oid]);
 if (!$gift) {
 	flash_set('error', 'Gift not found.');
-	header('Location: /pages/history.php');
+	header('Location: ' . app_url('pages/history.php'));
 	exit;
 }
 
@@ -31,31 +32,29 @@ $hint = trim($_POST['hint'] ?? '');
 
 if ($title === '' || $message === '') {
 	flash_set('error', 'Please provide a title and a love message.');
-	header('Location: /pages/edit_gift.php?id=' . urlencode($id));
+	header('Location: ' . app_url('pages/edit_gift.php?id=' . urlencode($id)));
 	exit;
 }
 
 $set = [
 	'title' => $title,
 	'message' => $message,
+	'music_url' => $music ?: null,
 	'music' => $music ?: null,
 	'is_locked' => $isLocked,
 	'lock_hint' => $hint ?: null,
 ];
+try {
+	$musicFile = secure_upload($_FILES['music_file'] ?? [], 'audio');
+	$voiceNote = secure_upload($_FILES['voice_note'] ?? [], 'audio');
+	if ($musicFile) $set['music_url'] = $musicFile;
+	if ($voiceNote) $set['voice_note_url'] = $voiceNote;
+} catch (Throwable $e) { flash_set('error', $e->getMessage()); header('Location: ' . app_url('pages/edit_gift.php?id=' . urlencode($id))); exit; }
 
 // Image replacement (optional)
 if (!empty($_FILES['image']['name'])) {
-	$uploads = __DIR__ . '/../public/uploads/';
-	@mkdir($uploads, 0775, true);
-	$ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-	$filename = 'gift_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . strtolower($ext ?: 'jpg');
-	$dest = $uploads . $filename;
-	if (!move_uploaded_file($_FILES['image']['tmp_name'], $dest)) {
-		flash_set('error', 'Failed to upload image.');
-		header('Location: /pages/edit_gift.php?id=' . urlencode($id));
-		exit;
-	}
-	$set['image'] = '/uploads/' . $filename;
+	try { $set['image'] = secure_upload($_FILES['image'], 'image'); }
+	catch (Throwable $e) { flash_set('error', $e->getMessage()); header('Location: ' . app_url('pages/edit_gift.php?id=' . urlencode($id))); exit; }
 	// Optionally remove old image
 	$old = (string)($gift['image'] ?? '');
 	if ($old && str_starts_with($old, '/uploads/')) {
@@ -86,5 +85,5 @@ if ($isLocked) {
 
 col_gifts()->updateOne(['_id' => $oid], ['$set' => $set]);
 flash_set('success', 'Gift updated.');
-header('Location: /pages/history.php');
+header('Location: ' . app_url('pages/history.php'));
 exit;

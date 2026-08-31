@@ -14,7 +14,8 @@ include __DIR__ . '/../includes/header.php';
 			<?php if ($msg = flash_get('success')): ?>
 				<div class="alert alert-success rounded-4"><?= htmlspecialchars($msg) ?></div>
 			<?php endif; ?>
-			<form method="post" action="/pages/save_gift.php" enctype="multipart/form-data">
+			<form method="post" action="<?= htmlspecialchars(app_url('pages/save_gift.php')) ?>" enctype="multipart/form-data">
+				<?= csrf_field() ?>
 				<div class="mb-3">
 					<label class="form-label">Title</label>
 					<input type="text" name="title" class="form-control rounded-4" placeholder="Our Sweet Memory" required>
@@ -31,6 +32,7 @@ include __DIR__ . '/../includes/header.php';
 					<label class="form-label">Music Link (YouTube/Spotify)</label>
 					<input type="url" name="music" class="form-control rounded-4" placeholder="https://open.spotify.com/... or https://youtube.com/...">
 				</div>
+				<div class="row g-3 mb-3"><div class="col-md-6"><label class="form-label">Ambient MP3 (optional)</label><input type="file" name="music_file" class="form-control rounded-4" accept="audio/mpeg,audio/mp4,audio/wav"></div><div class="col-md-6"><label class="form-label">Voice Note (optional)</label><input type="file" name="voice_note" class="form-control rounded-4" accept="audio/mpeg,audio/mp4,audio/wav"></div></div>
 				<div class="form-check form-switch mb-3">
 					<input class="form-check-input" type="checkbox" role="switch" id="lockSwitch" name="is_locked">
 					<label class="form-check-label" for="lockSwitch">Lock this gift</label>

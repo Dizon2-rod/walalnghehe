@@ -20,9 +20,9 @@ include __DIR__ . '/../includes/header.php';
 				</div>
 				<p class="text-muted small mb-3"><?= htmlspecialchars(substr((string)$g['message'],0,80)) ?><?= strlen((string)$g['message'])>80?'…':'' ?></p>
 				<div class="d-flex gap-2">
-					<a class="btn btn-primary btn-sm rounded-pill" href="/pages/view_gift.php?id=<?= (string)$g['_id'] ?>">View</a>
-					<a class="btn btn-outline-dark btn-sm rounded-pill" href="/pages/edit_gift.php?id=<?= (string)$g['_id'] ?>">Edit</a>
-					<a class="btn btn-outline-dark btn-sm rounded-pill" href="/pages/delete_gift.php?id=<?= (string)$g['_id'] ?>" onclick="return confirm('Delete this gift?')">Delete</a>
+					<a class="btn btn-primary btn-sm rounded-pill" href="<?= htmlspecialchars(app_url('pages/view_gift.php?id=' . urlencode((string)$g['_id']))) ?>">View</a>
+					<a class="btn btn-outline-dark btn-sm rounded-pill" href="<?= htmlspecialchars(app_url('pages/edit_gift.php?id=' . urlencode((string)$g['_id']))) ?>">Edit</a>
+					<a class="btn btn-outline-dark btn-sm rounded-pill" href="<?= htmlspecialchars(app_url('pages/delete_gift.php?id=' . urlencode((string)$g['_id']))) ?>" onclick="return confirm('Delete this gift?')">Delete</a>
 					<button class="btn btn-outline-dark btn-sm rounded-pill" onclick="navigator.clipboard.writeText(location.origin + '/pages/view_gift.php?id=<?= (string)$g['_id'] ?>'); this.textContent='Copied!'; setTimeout(()=>this.textContent='Share',1200);">Share</button>
 				</div>
 			</div>

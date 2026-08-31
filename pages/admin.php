@@ -1,0 +1,21 @@
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/../includes/helpers.php';
+require_once __DIR__ . '/../includes/pet_service.php';
+require_admin();
+$pets = $logs = $gifts = [];
+$error = null;
+try {
+    $client = new \SupabaseClient();
+    $pets = $client->select('pets', ['select' => '*', 'order' => 'name.asc']);
+    $logs = $client->select('pet_logs', ['select' => 'id,pet_id,action_type,actor,created_at,stat_deltas', 'order' => 'created_at.desc', 'limit' => '12']);
+    $gifts = $client->select('gifts', ['select' => 'id,title,created_at', 'order' => 'created_at.desc', 'limit' => '8']);
+} catch (Throwable $exception) { $error = $exception->getMessage(); }
+include __DIR__ . '/../includes/header.php';
+?>
+<div class="admin-shell"><div class="d-flex justify-content-between align-items-center mb-4"><div><p class="eyebrow">Administrator console</p><h1 class="romantic-title">Sanctuary Control Room</h1></div><a class="btn btn-outline-dark rounded-pill" href="<?= htmlspecialchars(app_url('pages/dashboard.php')) ?>">Back to sanctuary</a></div>
+<?php if ($error): ?><div class="alert alert-danger rounded-4"><?= htmlspecialchars($error) ?></div><?php endif; ?>
+<div class="row g-4"><div class="col-lg-8"><section class="admin-panel"><div class="d-flex justify-content-between align-items-center"><h2 class="romantic-title h3">Pet management</h2><button class="btn btn-sm btn-outline-dark rounded-pill" data-admin-action="reset">Reset all stats</button></div><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Pet</th><th>Mood</th><th>Stats</th><th>Save</th></tr></thead><tbody><?php foreach ($pets as $pet): ?><tr data-admin-pet="<?= htmlspecialchars((string)$pet['id']) ?>"><td><strong><?= htmlspecialchars((string)$pet['name']) ?></strong><br><small class="text-muted">Level <?= (int)$pet['level'] ?> · <?= (int)$pet['exp'] ?> XP</small></td><td><span data-admin-mood><?= htmlspecialchars((string)$pet['mood']) ?></span></td><td><div class="admin-stat-inputs"><?php foreach (['hunger','hygiene','happiness','energy'] as $stat): ?><label><?= ucfirst($stat) ?><input type="number" min="0" max="100" name="<?= $stat ?>" value="<?= (int)$pet[$stat] ?>"></label><?php endforeach; ?></div></td><td><button class="btn btn-sm btn-primary rounded-pill" data-admin-action="save">Save</button></td></tr><?php endforeach; ?></tbody></table></div></section></div><div class="col-lg-4"><section class="admin-panel"><h2 class="romantic-title h3">Quick links</h2><a class="admin-link" href="<?= htmlspecialchars(app_url('pages/create_gift.php')) ?>">Create a new gift</a><a class="admin-link" href="<?= htmlspecialchars(app_url('pages/history.php')) ?>">Manage gift history</a><a class="admin-link" href="<?= htmlspecialchars(app_url('pages/settings.php')) ?>">Anniversary settings</a><a class="admin-link" href="<?= htmlspecialchars(app_url('scripts/migrate_gifts.php')) ?>">Schema migration (CLI only)</a></section><section class="admin-panel mt-4"><h2 class="romantic-title h3">Supabase gifts</h2><p class="display-5 romantic-title"><?= count($gifts) ?></p><small class="text-muted">Showing latest gifts available through Supabase.</small></section></div></div>
+<section class="admin-panel mt-4"><h2 class="romantic-title h3">Recent pet activity</h2><div class="table-responsive"><table class="table"><thead><tr><th>Action</th><th>Actor</th><th>When</th><th>Changes</th></tr></thead><tbody><?php foreach ($logs as $log): ?><tr><td><?= htmlspecialchars((string)$log['action_type']) ?></td><td><?= htmlspecialchars((string)$log['actor']) ?></td><td><?= htmlspecialchars((string)$log['created_at']) ?></td><td><code><?= htmlspecialchars(json_encode($log['stat_deltas'] ?? [])) ?></code></td></tr><?php endforeach; ?></tbody></table></div></section></div>
+<script>window.MONTHSARY_CSRF = <?= json_encode(csrf_token()) ?>; window.MONTHSARY_BASE_PATH = <?= json_encode(getenv('APP_BASE_PATH') ?: '/walalnghehe') ?>;</script><script src="<?= htmlspecialchars(call_user_func('app_url', 'public/assets/js/admin.js')) ?>"></script>
+<?php include __DIR__ . '/../includes/footer.php'; ?>

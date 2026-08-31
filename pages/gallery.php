@@ -53,7 +53,7 @@ include __DIR__ . '/../includes/header.php';
 					<div class="fw-semibold"><?= htmlspecialchars((string)$g['title']) ?></div>
 					<div class="small text-muted"><?= date('F', mktime(0,0,0,(int)$g['month_created'],1)) ?> <?= (int)$g['year_created'] ?></div>
 				</div>
-				<a class="btn btn-primary btn-sm rounded-pill" href="/pages/view_gift.php?id=<?= (string)$g['_id'] ?>">Open</a>
+				<a class="btn btn-primary btn-sm rounded-pill" href="<?= htmlspecialchars(app_url('pages/view_gift.php?id=' . urlencode((string)$g['_id']))) ?>">Open</a>
 			</div>
 		</div>
 	</div>
